@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   collection,
   getDocs,
@@ -9,6 +9,8 @@ import {
   where,
   orderBy,
   Timestamp,
+  doc,
+  updateDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { toast } from "react-hot-toast";
@@ -29,20 +31,33 @@ interface AttendanceRecord {
   status: "present" | "absent" | "late";
   date: string;
   timestamp: Timestamp;
+  className: string;
 }
 
 export default function AttendancePage() {
+  const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState<Student[]>([]);
   const [attendanceRecords, setAttendanceRecords] = useState<
     AttendanceRecord[]
   >([]);
-  const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedClass, setSelectedClass] = useState("all");
   const [classes, setClasses] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const formattedDate = new Date(selectedDate).toISOString().split("T")[0];
+
+  const filteredStudents = useMemo(() => {
+    if (!students) return [];
+
+    return students.filter((student) => {
+      const isClassMatch =
+        selectedClass === "all" || student.class === selectedClass;
+      return isClassMatch;
+    });
+  }, [students, selectedClass]);
 
   useEffect(() => {
     fetchStudents();
@@ -104,6 +119,9 @@ export default function AttendancePage() {
         ...doc.data(),
       })) as AttendanceRecord[];
 
+      console.log("Fetched records:", records);
+      console.log("Selected date:", formattedDate);
+
       setAttendanceRecords(records);
     } catch (error) {
       console.error("Error fetching attendance records:", error);
@@ -127,35 +145,35 @@ export default function AttendancePage() {
         return;
       }
 
-      // Check if attendance already exists for this student on this date
       const existingRecord = attendanceRecords.find(
         (record) =>
           record.studentId === studentId && record.date === selectedDate
       );
 
       if (existingRecord) {
-        toast.error("Attendance already recorded for this student");
-        return;
+        // Update existing record
+        await updateDoc(doc(db, "attendance", existingRecord.id), {
+          status,
+          updatedAt: new Date().toISOString(),
+        });
+      } else {
+        // Create new record
+        const newRecord: AttendanceRecord = {
+          id: "",
+          studentId,
+          studentName: student.name,
+          status,
+          date: selectedDate,
+          timestamp: Timestamp.fromDate(new Date(selectedDate)),
+          className: student.class,
+        };
+
+        const docRef = await addDoc(collection(db, "attendance"), newRecord);
+        await updateDoc(docRef, { id: docRef.id });
       }
 
-      const attendanceData = {
-        studentId,
-        studentName: student.name,
-        status,
-        date: selectedDate,
-        timestamp: Timestamp.now(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      const docRef = await addDoc(collection(db, "attendance"), attendanceData);
-
-      // Update local state
-      setAttendanceRecords((prevRecords) => [
-        ...prevRecords,
-        { id: docRef.id, ...attendanceData },
-      ]);
-
+      // Refresh attendance records
+      await fetchAttendanceRecords();
       toast.success("Attendance recorded successfully");
     } catch (error) {
       console.error("Error recording attendance:", error);
@@ -166,6 +184,7 @@ export default function AttendancePage() {
   };
 
   const getAttendanceStatus = (studentId: string) => {
+    if (!selectedDate) return null;
     const record = attendanceRecords.find(
       (record) => record.studentId === studentId && record.date === selectedDate
     );
@@ -181,7 +200,7 @@ export default function AttendancePage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="space-y-6 p-6 bg-gray-50 min-h-screen">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Attendance</h1>
         <div className="flex flex-wrap gap-4 items-center">
@@ -222,7 +241,7 @@ export default function AttendancePage() {
                       scope="col"
                       className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
                     >
-                      Name
+                      Student Name
                     </th>
                     <th
                       scope="col"
@@ -245,69 +264,66 @@ export default function AttendancePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {students.map((student) => {
-                    const status = getAttendanceStatus(student.id);
-                    return (
-                      <tr key={student.id}>
-                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                          {student.name}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {student.class}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          {status ? (
-                            <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                status === "present"
-                                  ? "bg-green-100 text-green-800"
-                                  : status === "late"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-red-100 text-red-800"
-                              }`}
+                  {filteredStudents.map((student) => (
+                    <tr key={student.id}>
+                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                        {student.name}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                        {student.class}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                        {getAttendanceStatus(student.id) ? (
+                          <span
+                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                              getAttendanceStatus(student.id) === "present"
+                                ? "bg-green-100 text-green-800"
+                                : getAttendanceStatus(student.id) === "late"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {getAttendanceStatus(student.id)}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">Not recorded</span>
+                        )}
+                      </td>
+                      <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                        {!getAttendanceStatus(student.id) && (
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() =>
+                                handleAttendanceSubmit(student.id, "present")
+                              }
+                              disabled={isSubmitting}
+                              className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                             >
-                              {status.charAt(0).toUpperCase() + status.slice(1)}
-                            </span>
-                          ) : (
-                            <span className="text-gray-400">Not recorded</span>
-                          )}
-                        </td>
-                        <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                          {!status && (
-                            <div className="flex justify-end space-x-2">
-                              <button
-                                onClick={() =>
-                                  handleAttendanceSubmit(student.id, "present")
-                                }
-                                disabled={isSubmitting}
-                                className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                              >
-                                Present
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleAttendanceSubmit(student.id, "late")
-                                }
-                                disabled={isSubmitting}
-                                className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-                              >
-                                Late
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleAttendanceSubmit(student.id, "absent")
-                                }
-                                disabled={isSubmitting}
-                                className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                              >
-                                Absent
-                              </button>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                              Present
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleAttendanceSubmit(student.id, "late")
+                              }
+                              disabled={isSubmitting}
+                              className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                            >
+                              Late
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleAttendanceSubmit(student.id, "absent")
+                              }
+                              disabled={isSubmitting}
+                              className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                            >
+                              Absent
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
