@@ -46,31 +46,6 @@ Modern attendance management system with SMS notifications.
 - ✅ Attendance reports
 - ✅ Responsive design
 
-## 🗃️ Database Structure
-
-### Firestore Collections
-
-**students**
-```javascript
-{
-  name: "John Doe",
-  class: "10A",
-  rollNumber: "001",
-  parentPhone: "+1234567890"
-}
-```
-
-**attendance**
-```javascript
-{
-  studentId: "student_id",
-  studentName: "John Doe",
-  class: "10A",
-  date: "2024-01-15",
-  status: "present" | "absent" | "late"
-}
-```
-
 ## 🚢 Deploy
 
 Deploy to Vercel by connecting your GitHub repo and adding environment variables.
