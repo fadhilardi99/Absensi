@@ -11,8 +11,8 @@ export default function DashboardLayout({
       <Suspense fallback={<div>Loading...</div>}>
         <Sidebar />
       </Suspense>
-      <div className="pl-64">
-        <main className="p-8">{children}</main>
+      <div className="lg:pl-64">
+        <main className="p-4 lg:p-8">{children}</main>
       </div>
     </div>
   );

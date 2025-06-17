@@ -7,7 +7,7 @@ export default function DashboardPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.push("/dashboard/students");
+    router.push("/dashboard/dashboard");
   }, [router]);
 
   return (

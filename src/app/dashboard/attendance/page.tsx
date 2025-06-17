@@ -200,25 +200,25 @@ export default function AttendancePage() {
   }
 
   return (
-    <div className="space-y-6 p-6 bg-gray-50 min-h-screen">
+    <div className="space-y-6 p-4 lg:p-6 bg-gray-50 min-h-screen">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Attendance</h1>
-        <div className="flex flex-wrap gap-4 items-center">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Calendar className="w-5 h-5 text-gray-500" />
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full sm:w-auto rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <GraduationCap className="w-5 h-5 text-gray-500" />
             <select
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
-              className="rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full sm:w-auto rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             >
               {classes.map((className) => (
                 <option key={className} value={className}>
@@ -232,7 +232,7 @@ export default function AttendancePage() {
 
       <div className="mt-8 flex flex-col">
         <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+          <div className="inline-block min-w-full py-2 align-middle px-4 sm:px-6 lg:px-8">
             <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
               <table className="min-w-full divide-y divide-gray-300">
                 <thead className="bg-gray-50">
@@ -264,40 +264,46 @@ export default function AttendancePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {filteredStudents.map((student) => (
-                    <tr key={student.id}>
-                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                        {student.name}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {student.class}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {getAttendanceStatus(student.id) ? (
+                  {filteredStudents.map((student) => {
+                    const currentStatus = getAttendanceStatus(student.id);
+                    return (
+                      <tr key={student.id}>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                          {student.name}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                          {student.class}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                           <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                              getAttendanceStatus(student.id) === "present"
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              currentStatus === "present"
                                 ? "bg-green-100 text-green-800"
-                                : getAttendanceStatus(student.id) === "late"
+                                : currentStatus === "late"
                                 ? "bg-yellow-100 text-yellow-800"
-                                : "bg-red-100 text-red-800"
+                                : currentStatus === "absent"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-gray-100 text-gray-800"
                             }`}
                           >
-                            {getAttendanceStatus(student.id)}
+                            {currentStatus
+                              ? currentStatus.charAt(0).toUpperCase() +
+                                currentStatus.slice(1)
+                              : "Not Marked"}
                           </span>
-                        ) : (
-                          <span className="text-gray-400">Not recorded</span>
-                        )}
-                      </td>
-                      <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                        {!getAttendanceStatus(student.id) && (
-                          <div className="flex justify-end gap-2">
+                        </td>
+                        <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                          <div className="flex flex-col sm:flex-row gap-2 justify-end">
                             <button
                               onClick={() =>
                                 handleAttendanceSubmit(student.id, "present")
                               }
                               disabled={isSubmitting}
-                              className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                              className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white ${
+                                currentStatus === "present"
+                                  ? "bg-green-600"
+                                  : "bg-green-600 hover:bg-green-700"
+                              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50`}
                             >
                               Present
                             </button>
@@ -306,7 +312,11 @@ export default function AttendancePage() {
                                 handleAttendanceSubmit(student.id, "late")
                               }
                               disabled={isSubmitting}
-                              className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                              className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white ${
+                                currentStatus === "late"
+                                  ? "bg-yellow-600"
+                                  : "bg-yellow-600 hover:bg-yellow-700"
+                              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50`}
                             >
                               Late
                             </button>
@@ -315,15 +325,19 @@ export default function AttendancePage() {
                                 handleAttendanceSubmit(student.id, "absent")
                               }
                               disabled={isSubmitting}
-                              className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                              className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white ${
+                                currentStatus === "absent"
+                                  ? "bg-red-600"
+                                  : "bg-red-600 hover:bg-red-700"
+                              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50`}
                             >
                               Absent
                             </button>
                           </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

@@ -219,13 +219,13 @@ export default function StudentsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="sm:flex sm:items-center sm:justify-between">
+    <div className="space-y-6 p-4 lg:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-semibold text-gray-900">Students</h1>
         <button
           type="button"
           onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 w-full sm:w-auto"
         >
           <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
           Add Student
@@ -233,8 +233,8 @@ export default function StudentsPage() {
       </div>
 
       {/* Search and Filter */}
-      <div className="flex flex-wrap gap-4">
-        <div className="max-w-lg">
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="w-full sm:max-w-lg">
           <label htmlFor="search" className="sr-only">
             Search students
           </label>
@@ -250,21 +250,16 @@ export default function StudentsPage() {
             />
           </div>
         </div>
-
-        <div className="max-w-lg">
-          <label htmlFor="class-filter" className="sr-only">
-            Filter by class
-          </label>
+        <div className="w-full sm:w-48">
           <select
-            id="class-filter"
             value={selectedClass}
             onChange={(e) => setSelectedClass(e.target.value)}
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           >
             <option value="all">All Classes</option>
-            {classes.map((cls) => (
-              <option key={cls} value={cls}>
-                {cls}
+            {classes.map((className) => (
+              <option key={className} value={className}>
+                {className}
               </option>
             ))}
           </select>
@@ -274,7 +269,7 @@ export default function StudentsPage() {
       {/* Students Table */}
       <div className="mt-8 flex flex-col">
         <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+          <div className="inline-block min-w-full py-2 align-middle px-4 sm:px-6 lg:px-8">
             <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
               <table className="min-w-full divide-y divide-gray-300">
                 <thead className="bg-gray-50">
@@ -327,18 +322,20 @@ export default function StudentsPage() {
                         {student.phoneNumber}
                       </td>
                       <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                        <button
-                          onClick={() => handleEditStudent(student)}
-                          className="text-blue-600 hover:text-blue-900 mr-4"
-                        >
-                          <PencilIcon className="h-5 w-5" aria-hidden="true" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteStudent(student.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <TrashIcon className="h-5 w-5" aria-hidden="true" />
-                        </button>
+                        <div className="flex flex-col sm:flex-row gap-2 justify-end">
+                          <button
+                            onClick={() => handleEditStudent(student)}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            <PencilIcon className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteStudent(student.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            <TrashIcon className="h-5 w-5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -355,136 +352,100 @@ export default function StudentsPage() {
         onClose={handleCloseModal}
         className="relative z-50"
       >
-        {/* Background overlay */}
-        <div
-          className="fixed inset-0 bg-black/30 backdrop-blur-sm"
-          aria-hidden="true"
-        />
-
-        {/* Full-screen container to center the panel */}
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="mx-auto max-w-4xl w-full rounded-xl bg-white p-8 shadow-2xl">
-            <div className="flex items-center justify-between mb-8">
-              <Dialog.Title className="text-3xl font-semibold text-gray-900">
-                Add New Student
-              </Dialog.Title>
-              <button
-                onClick={handleCloseModal}
-                className="text-gray-400 hover:text-gray-500 focus:outline-none"
-              >
-                <span className="sr-only">Close</span>
-                <svg
-                  className="h-8 w-8"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
+          <Dialog.Panel className="mx-auto max-w-sm rounded-lg bg-white p-6 w-full">
+            <Dialog.Title className="text-lg font-medium leading-6 text-gray-900 mb-4">
+              Add New Student
+            </Dialog.Title>
             <form
               ref={formRef}
               onSubmit={handleAddStudent}
-              className="space-y-8"
+              className="space-y-4"
             >
-              <div className="grid grid-cols-6 gap-8">
-                <div className="col-span-6">
-                  <label
-                    htmlFor="name"
-                    className="block text-base font-medium text-gray-700 mb-2"
-                  >
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    id="name"
-                    required
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-3 px-4"
-                    placeholder="Enter student's full name"
-                  />
-                </div>
-
-                <div className="col-span-6 sm:col-span-3">
-                  <label
-                    htmlFor="class"
-                    className="block text-base font-medium text-gray-700 mb-2"
-                  >
-                    Class
-                  </label>
-                  <select
-                    name="class"
-                    id="class"
-                    required
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-3 px-4"
-                  >
-                    <option value="">Select class</option>
-                    {classes.map((cls) => (
-                      <option key={cls} value={cls}>
-                        {cls}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="col-span-6 sm:col-span-3">
-                  <label
-                    htmlFor="gender"
-                    className="block text-base font-medium text-gray-700 mb-2"
-                  >
-                    Gender
-                  </label>
-                  <select
-                    name="gender"
-                    id="gender"
-                    required
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-3 px-4"
-                  >
-                    <option value="">Select gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                  </select>
-                </div>
-
-                <div className="col-span-6">
-                  <label
-                    htmlFor="phoneNumber"
-                    className="block text-base font-medium text-gray-700 mb-2"
-                  >
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    name="phoneNumber"
-                    id="phoneNumber"
-                    required
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-3 px-4"
-                    placeholder="Enter student's phone number"
-                  />
-                </div>
+              <div>
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  id="name"
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                />
               </div>
-
-              <div className="flex justify-end space-x-4 pt-6 border-t">
+              <div>
+                <label
+                  htmlFor="class"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Class
+                </label>
+                <select
+                  name="class"
+                  id="class"
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                  <option value="">Select a class</option>
+                  {classes.map((className) => (
+                    <option key={className} value={className}>
+                      {className}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label
+                  htmlFor="gender"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Gender
+                </label>
+                <select
+                  name="gender"
+                  id="gender"
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                  <option value="">Select gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+              <div>
+                <label
+                  htmlFor="phoneNumber"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  name="phoneNumber"
+                  id="phoneNumber"
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                />
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 justify-end">
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="px-6 py-3 border border-gray-300 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-full sm:w-auto"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 w-full sm:w-auto"
                 >
-                  {isSubmitting ? "Saving..." : "Save Student"}
+                  {isSubmitting ? "Adding..." : "Add Student"}
                 </button>
               </div>
             </form>
@@ -498,137 +459,104 @@ export default function StudentsPage() {
         onClose={handleCloseEditModal}
         className="relative z-50"
       >
-        <div
-          className="fixed inset-0 bg-black/30 backdrop-blur-sm"
-          aria-hidden="true"
-        />
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          <Dialog.Panel className="mx-auto max-w-4xl w-full rounded-xl bg-white p-8 shadow-2xl">
-            <div className="flex items-center justify-between mb-8">
-              <Dialog.Title className="text-3xl font-semibold text-gray-900">
-                Edit Student
-              </Dialog.Title>
-              <button
-                onClick={handleCloseEditModal}
-                className="text-gray-400 hover:text-gray-500 focus:outline-none"
-              >
-                <span className="sr-only">Close</span>
-                <svg
-                  className="h-8 w-8"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
+          <Dialog.Panel className="mx-auto max-w-sm rounded-lg bg-white p-6 w-full">
+            <Dialog.Title className="text-lg font-medium leading-6 text-gray-900 mb-4">
+              Edit Student
+            </Dialog.Title>
             <form
               ref={editFormRef}
               onSubmit={handleUpdateStudent}
-              className="space-y-8"
+              className="space-y-4"
             >
-              <div className="grid grid-cols-6 gap-8">
-                <div className="col-span-6">
-                  <label
-                    htmlFor="edit-name"
-                    className="block text-base font-medium text-gray-700 mb-2"
-                  >
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    id="edit-name"
-                    required
-                    defaultValue={selectedStudent?.name}
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-3 px-4"
-                    placeholder="Enter student's full name"
-                  />
-                </div>
-
-                <div className="col-span-6 sm:col-span-3">
-                  <label
-                    htmlFor="edit-class"
-                    className="block text-base font-medium text-gray-700 mb-2"
-                  >
-                    Class
-                  </label>
-                  <select
-                    name="class"
-                    id="edit-class"
-                    required
-                    defaultValue={selectedStudent?.class}
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-3 px-4"
-                  >
-                    <option value="">Select class</option>
-                    {classes.map((cls) => (
-                      <option key={cls} value={cls}>
-                        {cls}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="col-span-6 sm:col-span-3">
-                  <label
-                    htmlFor="edit-gender"
-                    className="block text-base font-medium text-gray-700 mb-2"
-                  >
-                    Gender
-                  </label>
-                  <select
-                    name="gender"
-                    id="edit-gender"
-                    required
-                    defaultValue={selectedStudent?.gender}
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-3 px-4"
-                  >
-                    <option value="">Select gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                  </select>
-                </div>
-
-                <div className="col-span-6">
-                  <label
-                    htmlFor="edit-phoneNumber"
-                    className="block text-base font-medium text-gray-700 mb-2"
-                  >
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    name="phoneNumber"
-                    id="edit-phoneNumber"
-                    required
-                    defaultValue={selectedStudent?.phoneNumber}
-                    className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-3 px-4"
-                    placeholder="Enter student's phone number"
-                  />
-                </div>
+              <div>
+                <label
+                  htmlFor="edit-name"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  id="edit-name"
+                  defaultValue={selectedStudent?.name}
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                />
               </div>
-
-              <div className="flex justify-end space-x-4 pt-6 border-t">
+              <div>
+                <label
+                  htmlFor="edit-class"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Class
+                </label>
+                <select
+                  name="class"
+                  id="edit-class"
+                  defaultValue={selectedStudent?.class}
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                  <option value="">Select a class</option>
+                  {classes.map((className) => (
+                    <option key={className} value={className}>
+                      {className}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label
+                  htmlFor="edit-gender"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Gender
+                </label>
+                <select
+                  name="gender"
+                  id="edit-gender"
+                  defaultValue={selectedStudent?.gender}
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                >
+                  <option value="">Select gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+              <div>
+                <label
+                  htmlFor="edit-phoneNumber"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  name="phoneNumber"
+                  id="edit-phoneNumber"
+                  defaultValue={selectedStudent?.phoneNumber}
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                />
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 justify-end">
                 <button
                   type="button"
                   onClick={handleCloseEditModal}
-                  className="px-6 py-3 border border-gray-300 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-full sm:w-auto"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 w-full sm:w-auto"
                 >
-                  {isSubmitting ? "Saving..." : "Update Student"}
+                  {isSubmitting ? "Updating..." : "Update Student"}
                 </button>
               </div>
             </form>
