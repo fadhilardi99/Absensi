@@ -174,7 +174,11 @@ export default function AttendancePage() {
 
       // Refresh attendance records
       await fetchAttendanceRecords();
-      toast.success("Attendance recorded successfully");
+
+      // Tampilkan alert sukses
+      toast.success(
+        `Status ${student.name} (${status}) berhasil dicatat dan pesan telah dikirim!`
+      );
     } catch (error) {
       console.error("Error recording attendance:", error);
       toast.error("Failed to record attendance");
@@ -190,6 +194,10 @@ export default function AttendancePage() {
     );
     return record?.status || null;
   };
+
+  const hasAnyUnmarked = filteredStudents.some(
+    (student) => !getAttendanceStatus(student.id)
+  );
 
   if (loading) {
     return (
@@ -233,108 +241,104 @@ export default function AttendancePage() {
       <div className="mt-8 flex flex-col">
         <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="inline-block min-w-full py-2 align-middle px-4 sm:px-6 lg:px-8">
-            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-300">
-                <thead className="bg-gray-50">
+            <div className="overflow-x-auto rounded-lg shadow">
+              <table className="min-w-full divide-y divide-gray-200 bg-white">
+                <thead className="bg-gray-800">
                   <tr>
-                    <th
-                      scope="col"
-                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
-                    >
-                      Student Name
+                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                      Nama Siswa
                     </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                    >
-                      Class
+                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                      Kelas
                     </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                    >
+                    <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-wider">
                       Status
                     </th>
-                    <th
-                      scope="col"
-                      className="relative py-3.5 pl-3 pr-4 sm:pr-6"
-                    >
-                      <span className="sr-only">Actions</span>
-                    </th>
+                    {hasAnyUnmarked && (
+                      <th className="py-3 px-4 text-center text-xs font-bold text-white uppercase tracking-wider">
+                        Aksi
+                      </th>
+                    )}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
-                  {filteredStudents.map((student) => {
+                <tbody>
+                  {filteredStudents.map((student, idx) => {
                     const currentStatus = getAttendanceStatus(student.id);
                     return (
-                      <tr key={student.id}>
-                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                      <tr
+                        key={student.id}
+                        className={
+                          idx % 2 === 0
+                            ? "bg-gray-50 hover:bg-gray-100"
+                            : "bg-white hover:bg-gray-100"
+                        }
+                      >
+                        <td className="py-3 px-4 font-medium text-gray-900">
                           {student.name}
                         </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                        <td className="py-3 px-4 text-gray-700">
                           {student.class}
                         </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              currentStatus === "present"
-                                ? "bg-green-100 text-green-800"
-                                : currentStatus === "late"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : currentStatus === "absent"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-gray-100 text-gray-800"
-                            }`}
-                          >
-                            {currentStatus
-                              ? currentStatus.charAt(0).toUpperCase() +
-                                currentStatus.slice(1)
-                              : "Not Marked"}
-                          </span>
-                        </td>
-                        <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                          <div className="flex flex-col sm:flex-row gap-2 justify-end">
-                            <button
-                              onClick={() =>
-                                handleAttendanceSubmit(student.id, "present")
-                              }
-                              disabled={isSubmitting}
-                              className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white ${
+                        <td className="py-3 px-4">
+                          {currentStatus ? (
+                            <span
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                                 currentStatus === "present"
-                                  ? "bg-green-600"
-                                  : "bg-green-600 hover:bg-green-700"
-                              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50`}
+                                  ? "bg-green-100 text-green-700"
+                                  : currentStatus === "late"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : currentStatus === "absent"
+                                  ? "bg-red-100 text-red-700"
+                                  : "bg-gray-100 text-gray-700"
+                              }`}
                             >
-                              Present
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleAttendanceSubmit(student.id, "late")
-                              }
-                              disabled={isSubmitting}
-                              className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white ${
-                                currentStatus === "late"
-                                  ? "bg-yellow-600"
-                                  : "bg-yellow-600 hover:bg-yellow-700"
-                              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50`}
-                            >
-                              Late
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleAttendanceSubmit(student.id, "absent")
-                              }
-                              disabled={isSubmitting}
-                              className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white ${
-                                currentStatus === "absent"
-                                  ? "bg-red-600"
-                                  : "bg-red-600 hover:bg-red-700"
-                              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50`}
-                            >
-                              Absent
-                            </button>
-                          </div>
+                              {currentStatus === "present" && "✅"}
+                              {currentStatus === "late" && "⏰"}
+                              {currentStatus === "absent" && "❌"}
+                              {typeof currentStatus === "string"
+                                ? currentStatus.charAt(0).toUpperCase() +
+                                  currentStatus.slice(1)
+                                : ""}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 italic">
+                              Belum diisi
+                            </span>
+                          )}
                         </td>
+                        {!currentStatus && hasAnyUnmarked && (
+                          <td className="py-3 px-4 text-center">
+                            <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                              <button
+                                onClick={() =>
+                                  handleAttendanceSubmit(student.id, "present")
+                                }
+                                disabled={isSubmitting}
+                                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded shadow text-xs font-semibold transition"
+                              >
+                                Present
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleAttendanceSubmit(student.id, "late")
+                                }
+                                disabled={isSubmitting}
+                                className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 rounded shadow text-xs font-semibold transition"
+                              >
+                                Late
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleAttendanceSubmit(student.id, "absent")
+                                }
+                                disabled={isSubmitting}
+                                className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded shadow text-xs font-semibold transition"
+                              >
+                                Absent
+                              </button>
+                            </div>
+                          </td>
+                        )}
                       </tr>
                     );
                   })}
