@@ -195,10 +195,6 @@ export default function AttendancePage() {
     return record?.status || null;
   };
 
-  const hasAnyUnmarked = filteredStudents.some(
-    (student) => !getAttendanceStatus(student.id)
-  );
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -254,11 +250,6 @@ export default function AttendancePage() {
                     <th className="py-3 px-4 text-left text-xs font-bold text-white uppercase tracking-wider">
                       Status
                     </th>
-                    {hasAnyUnmarked && (
-                      <th className="py-3 px-4 text-center text-xs font-bold text-white uppercase tracking-wider">
-                        Aksi
-                      </th>
-                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -301,13 +292,6 @@ export default function AttendancePage() {
                                 : ""}
                             </span>
                           ) : (
-                            <span className="text-gray-400 italic">
-                              Belum diisi
-                            </span>
-                          )}
-                        </td>
-                        {!currentStatus && hasAnyUnmarked && (
-                          <td className="py-3 px-4 text-center">
                             <div className="flex flex-col sm:flex-row gap-2 justify-center">
                               <button
                                 onClick={() =>
@@ -337,8 +321,8 @@ export default function AttendancePage() {
                                 Absent
                               </button>
                             </div>
-                          </td>
-                        )}
+                          )}
+                        </td>
                       </tr>
                     );
                   })}
